@@ -1,0 +1,53 @@
+version: "3.9"
+
+networks:
+    godofwarnetwork:
+        name: godofwarnetwork
+
+services:
+    restflask_db:
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_DB: restflask_db
+            POSTGRES_USER: mouz
+            POSTGRES_PASSWORD: 1234
+        networks:
+            - godofwarnetwork
+        volumes:
+            - "pgdata:/var/lib/postgresql/data"
+            
+    bot_back:
+        environment:
+            URL_WEB: "https://2308-178-122-208-31.ngrok.io"
+        image: dkmouzdevelop/flaskback
+        restart: always
+        networks:
+            - godofwarnetwork
+        depends_on:
+            - restflask_db
+
+    bot_front:
+        environment:
+            BOT_TOKEN: "1974470706:AAEA5cPdLBqtYng_uEbZDmi2E8ADj2J_rCw"
+            WEBHOOK_URL: "https://0724-178-122-208-31.ngrok.io"
+            URL_WEB: "https://2308-178-122-208-31.ngrok.io"
+        image: dkmouzdevelop/flaskfront
+        restart: always
+        networks:
+            - godofwarnetwork
+            
+    nginx:
+        image: dkmouzdevelop/nginxbot
+        restart: always
+        networks:
+            - godofwarnetwork
+        ports:
+            - "5000:1337"
+            - "5001:1488"
+        depends_on:
+            - bot_back
+            - bot_front
+            
+volumes:
+     pgdata:
